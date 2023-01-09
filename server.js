@@ -56,146 +56,142 @@ passport.use(User.createStrategy()); // Initializing local strategy: a method to
 passport.serializeUser(User.serializeUser()) // Initializing sign-in method
 passport.deserializeUser(User.deserializeUser()) 
 
-const addressBook = [{ name: "albert" }, { name: "sai" }, { name: "rock" }];
-const groups = ["Friends", "Family"]
-
-app.get("/", (req, res) => {
-    if(req.isAuthenticated()){
-        res.redirect("/home")
+app.get("/", (req, res) => { // Rendering the frontend of the home route
+    if(req.isAuthenticated()){ // Checking wether the user is logged in or not
+        res.redirect("/home") // Get's redirected to the dashboard if the user is logged in
     } else {
-        res.render("homeAnonymous");
+        res.render("homeAnonymous"); // Posts Frontend of the homepage for those who are anonymous
 
     }
 });
 
-app.get("/home", async (req, res) => {
-    if(req.isAuthenticated()){
-        const currentUser = req.user;
-        let [fullAddressBook] = await User.find({username: currentUser.username});
-        fullAddressBook = fullAddressBook.addressBook;
-        const groups = []
-        if (fullAddressBook.length > 0){
-            fullAddressBook.forEach(contact=>{
-                groups.push(contact.group)
+app.get("/home", async (req, res) => { // Rendering the frotnend of the dashboard
+    if(req.isAuthenticated()){ // If the user is logged in
+        const currentUser = req.user; // The credentials of the user who has just logged in
+        const [userDatabase] = await User.find({username: currentUser.username}); // The database of the user who has logged in
+        const fullAddressBook = userDatabase.addressBook; // Full address book of the user who has just logged in
+        const groups = [] // Number of groups
+        if (fullAddressBook.length > 0){ // If the address book is not empty
+            fullAddressBook.forEach(contact=>{ // For every contact in the list
+                groups.push(contact.group) // The code pushes the group of the contact
             })
-        } else {
-            groups.push("Default");
+        } else { // If the address book is empty
+            groups.push("Default"); // The code adds a "Default" group
         }
-        res.render("homeAuthorized", { groups: groups })
-    } else {
-        res.redirect("/")
+        res.render("homeAuthorized", { groups: groups }) // And renders the dashboard
+    } else { // If the user is not logged in
+        res.redirect("/") // User will be redirected to the homepage for anonymous users
     }
 })
 
-app.get("/about", (req, res) => {
+app.get("/about", (req, res) => { // Rendering the About Page's frontend
 
-    if(req.isAuthenticated()){
-        res.render("about")
-    } else {
-        res.redirect("/")
+    if(req.isAuthenticated()){ // If the user is authenticated
+        res.render("about") //Posts the About Page's frontend
+    } else { // If not
+        res.redirect("/") // Posts the homepage for anonymous users
     }
 })
 
-app.get("/contact", (req, res) => {
-    if(req.isAuthenticated()){
-        res.render("contact")
-    } else {
-        res.redirect("/")
+app.get("/contact", (req, res) => { // Rendering the Contact Page's frontend
+    if(req.isAuthenticated()){ // If the user is authenticated
+        res.render("contact") //Posts the Contact Page's frontend
+    } else { // If not
+        res.redirect("/") // Posts the homepage for anonymous users
     }
     
 })
-app.get("/book", async (req, res) => {
+app.get("/book", async (req, res) => { // Rendering the Addrss Book Page's frontend.
 
-    if(req.isAuthenticated()){
-        let [fullAddressBook] = await User.find({username: req.user.username});
-        fullAddressBook = fullAddressBook.addressBook;
-        res.render("book", {book: fullAddressBook, heading: "Your Contacts"})
-    } else {
-        res.redirect("/")
+    if(req.isAuthenticated()){ // If the user is authenticated
+        const [userDatabase] = await User.find({username: req.user.username}); // The user's credentials in the database
+        const fullAddressBook = userDatabase.addressBook; // The users address book
+        res.render("book", {book: fullAddressBook, heading: "Your Contacts"}) // Rendering the Address Book page
+    } else { // If the user is Anonymous
+        res.redirect("/") // Renders the homepage for anonymous users
     }
 })
-app.get("/new-contact", async (req, res) => {
-    if(req.isAuthenticated()){
-        const currentUser = req.user;
-        let [fullAddressBook] = await User.find({username: currentUser.username});
-        fullAddressBook = fullAddressBook.addressBook;
-        const groups = []
-        if (fullAddressBook.length > 0){
-            fullAddressBook.forEach(contact=>{
-                groups.push(contact.group)
+app.get("/new-contact", async (req, res) => { // Rendering the page for a new contact creation
+    if(req.isAuthenticated()){ // If the user is logged in
+        const currentUser = req.user; // The logged in user's credentials
+        const [userDatabase] = await User.find({username: currentUser.username}); // The same credentials in the database
+        const fullAddressBook = userDatabase.addressBook; // The address book of the user
+        const groups = [] // All the groups
+        if (fullAddressBook.length > 0){ // If the address book is not empty
+            fullAddressBook.forEach(contact=>{ // For every contact in the book
+                groups.push(contact.group) // It pushses the group of the contact into the group array
             })
-        } else {
-            groups.push("Default");
+        } else { // If the address book is empty
+            groups.push("Default"); // It pushes a "Default" group
         }
-        res.render("entry", {groups: groups})
-    } else {
-        res.redirect("/")
+        res.render("entry", {groups: groups}) // Renders the new-contact page
+    } else { // If the user is anonymous
+        res.redirect("/") // Renders the homepage for anonymous users.
     }
 });
-app.get("/search", (req, res) => {
-    if(req.isAuthenticated()){
-        res.render("search")
-    } else {
-        res.redirect("/")
+app.get("/search", (req, res) => { // Rendering the search page
+    if(req.isAuthenticated()){ // If the user is logged in
+        res.render("search") // Renders the frontend
+    } else { // If not
+        res.redirect("/") // Renders the homepage for anonymous users
     }
 });
-app.post("/search", async (req, res) => {
-    if(req.isAuthenticated){
-        let [fullAddressBook] = await User.find({username: req.user.username})
-        fullAddressBook = fullAddressBook.addressBook;
-        const filtered = fullAddressBook.filter(contact => contact.name.toLowerCase().includes(req.body.searchInput.toLowerCase()))
-        res.render("book", { book: filtered, heading: "Search Results" });
-    } else {
-        res.redirect("/");
+app.post("/search", async (req, res) => { // Posting the logic of the search page
+    if(req.isAuthenticated){ // If the user is logged in
+        const [userDatabase] = await User.find({username: req.user.username}) // The logged in user's credentials in the database
+        const fullAddressBook = userDatabase.addressBook; // The user's address book
+        const filtered = fullAddressBook.filter(contact => contact.name.toLowerCase().includes(req.body.searchInput.toLowerCase())) // Filtered address book (Contacts which matches the search results)
+        res.render("book", { book: filtered, heading: "Search Results" }); // Renders the search results
+    } else { // If the user is not logged in
+        res.redirect("/"); // Renders the homepage for anonymous users
     }
     
 });
-app.get("/login", (req, res) => {
-    res.render("login")
+app.get("/login", (req, res) => { // Rendering the login page
+    res.render("login") // Renders the frontend
 });
-app.post("/login", async (req, res) => {
-    const username = req.body.loginUsername;
-    const password = req.body.loginPassword;
-    const email = req.body.loginEmail;
-    const [foundUser] = await User.find({
+app.post("/login", async (req, res) => { // Login page's logic
+    const username = req.body.loginUsername; // The username which is typed in
+    const password = req.body.loginPassword; // The password which is typed in
+    const email = req.body.loginEmail; // The email which is typed in
+    const [foundUser] = await User.find({ // Finds a user in the database which matches the credentials
         username: username,
         password: password,
         email: email
     });
-    console.log(foundUser);
-    if(foundUser){
-        const user = new User({
+    if(foundUser){ // If a user is found
+        const user = new User({ // It creates a new user object which can be used to login
             username: username,
             email: email,
             password: password
         });
-        req.login(user, function(err) {
-            if (err) {
-                 console.log(err);
-                 res.redirect('/login')
-            } else {
-                passport.authenticate('local')
-                res.redirect("/home")
+        req.login(user, function(err) { // Logging in the user
+            if (err) { // If there are any errors
+                 console.log(err); // Shows the error
+                 res.redirect('/login') // Redirects to the login page
+            } else { // if there are no errors
+                passport.authenticate('local') // Authenticates the user
+                res.redirect("/home") // Redirects the user to the dashboard
             }
           });
-    } else {
-        res.redirect("/login")
+    } else { // If there are no users which match the credentials
+        res.redirect("/login") // Clears all the input
     }
     
 
 
 })
-app.get("/register", (req, res) => {
-    res.render("register");
+app.get("/register", (req, res) => { // Rendering the register page
+    res.render("register"); // Renders the frontend
 });
-app.post("/register", async (req, res) => {
-    User.register({username: req.body.username, password: req.body.password, email: req.body.email}, req.body.password, (err, user)=>{
-        if(err){
-            console.log(err);
-            res.redirect("/register")
-        } else {
-            passport.authenticate("local")(req, res, function(){
-                res.redirect("/home");
+app.post("/register", async (req, res) => { // Register page's logic
+    User.register({username: req.body.username, password: req.body.password, email: req.body.email}, req.body.password, (err, user)=>{ // Registering the user
+        if(err){ // If there are any errors
+            console.log(err); // Shows the error
+            res.redirect("/register") // Redirects to the Register page
+        } else { // If there are no errors
+            passport.authenticate("local")(req, res, function(){ // Authenticates the user and creates a user
+                res.redirect("/home"); // Redirects to the dashboard
             })
         }
     })
@@ -204,77 +200,73 @@ app.post("/register", async (req, res) => {
 
 
 
-app.get("/logout", (req, res)=>{
-    req.logout(function(err) {
-        if (err) { 
-            console.log(err);
-            res.redirect("/home") 
+app.get("/logout", (req, res)=>{ // Logout logic
+    req.logout(function(err) { // Logs out the user
+        if (err) { // If there are any errors
+            console.log(err); // Shows the error
+            res.redirect("/home") // Redirects back to the dashboard
         }
-        res.redirect('/');
+        res.redirect('/'); // If there are no errors, it redirects to the homepage for anonymous users and logs out.
       });
 });
 
-app.post("/new-contact", async (req, res)=>{
-    if(req.isAuthenticated()){
-        const username = req.user.username;
-        let [fullAddressBook] = await User.find({username: username});
-        console.log(fullAddressBook);
-        fullAddressBook = fullAddressBook.addressBook;
-        console.log(fullAddressBook);
-        let group=""
-        if(!req.body.group){
-            group = "Default"
-        } else {
-            group = req.body.group
+app.post("/new-contact", async (req, res)=>{ // Logic for creating a new contact
+    if(req.isAuthenticated()){ // If the user is logged in
+        const username = req.user.username; // The username of the user
+        const [userDatabase] = await User.find({username: username}); // The same user found in the database
+        const fullAddressBook = userDatabase.addressBook; // The user's address book
+        const group = req.body.group ? // If the group is not empty
+        req.body.group // Sets the group to be the group entered in the form 
+        : // If the group is empty
+         "Default"; // Sets the group to be "Default"
+        const newContact = { // Creating the new contact
+            name: req.body.name, // Name of the contact
+            companyOrSchool: req.body.companyOrSchool, // Company/School of the contact
+            group: group, // Group of the contact
+            phone: req.body.phone, // Phone of the contact
+            email: req.body.email, // Email of the contact
+            address: req.body.address // Address of the contact
         }
-        const newContact = {
-            name: req.body.name,
-            companyOrSchool: req.body.companyOrSchool,
-            group: group,
-            phone: req.body.phone,
-            email: req.body.email,
-            address: req.body.address
-        }
-        fullAddressBook.push(newContact);
-        console.log(fullAddressBook)
-        User.updateOne({username: username}, {addressBook: fullAddressBook}, err=>{
-            if(!err){
-                res.redirect("/book")
-            }else{
-                res.redirect("/new-contact");
+        fullAddressBook.push(newContact); // Adds a new contact into the address book
+        User.updateOne({username: username}, {addressBook: fullAddressBook}, err=>{ // Updating the address book
+            if(!err){ // If there are no errors
+                res.redirect("/book") // Redirects the user to the Address Book page
+            }else{ // If there are errors
+                res.redirect("/new-contact"); // Redirects the user to the contact creation page
             }
         })
         
-    }else{
-        res.redirect("/")
+    }else{ // If the user is not logged in 
+        res.redirect("/") // Redirects to the homepage for anonymous users
     }
 });
 
-app.get("/groups/:groupName", async(req, res)=>{
-    if(req.isAuthenticated){
-        let [fullAddressBook] = await User.find({username: req.user.username})
-        fullAddressBook = fullAddressBook.addressBook
-        const filteredAddressBook = fullAddressBook.filter(contact => contact.group === req.params.groupName);
-        res.render("book", {heading: req.params.groupName, book: filteredAddressBook});
-    } else {
-        res.redirect("/")
+app.get("/groups/:groupName", async(req, res)=>{ // Getting the contacts in a specific group
+    if(req.isAuthenticated){ // If the user is logged in
+        const [userDatabase] = await User.find({username: req.user.username}) // Finds the user in the database
+        const fullAddressBook = userDatabase.addressBook // The user's address book
+        const filteredAddressBook = fullAddressBook.filter(contact => contact.group === req.params.groupName); // Gets all the contacts with the same group as the filter is applied
+        res.render("book", {heading: req.params.groupName, book: filteredAddressBook}); // Renders the contacts with the specific group
+    } else { // If the user is anonymous
+        res.redirect("/") // Redirects to the homepage for anonymous users
     }
     
 })
 
-app.post("/delete-contact/:contactName", async (req, res)=>{
-    if(req.isAuthenticated){
-        let [fullAddressBook] = await User.find({username: req.user.username});
-        fullAddressBook = fullAddressBook.addressBook;
-        fullAddressBook = fullAddressBook.filter(contact=>contact.name !== req.params.contactName);
-        console.log(fullAddressBook);
-        await User.updateOne({username: req.user.username}, {addressBook: fullAddressBook});
-        res.redirect("/book")
-    }else{
-        res.redirect("/")
+app.get("/delete-contact/:contactName", async (req, res)=>{ // Deleting contacts using a name
+    if(req.isAuthenticated){ // If the user is logged in
+        const [userDatabase] = await User.find({username: req.user.username}); // Finds the user in the database
+        const fullAddressBook = userDatabase.addressBook; // The full address book of the user
+        console.log(req.params.contactName);
+        const filteredAddressBook = fullAddressBook.filter(contact=>contact.name !== req.params.contactName.split("%20").join(" ")); // Takes out all the contacts which matches the name of the contact which should be deleted 
+        console.log(filteredAddressBook);
+        await User.updateOne({username: req.user.username}, {addressBook: filteredAddressBook}); // Updates the address book
+        res.redirect("/book") // Redirects user to the address book page
+    }else{ // If the user is anonymous
+        res.redirect("/") // Redirects to the homepage for anonymous users
     }
 })
 
-app.listen(8080, () => {
-    console.log("Server has started on port 8080!")
+app.listen(8080, () => { // Starts the server on port 8080 (http://localhost:8080)
+    console.log("Server has started on port 8080!") // Prints out if it's successfull
 })

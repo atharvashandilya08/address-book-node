@@ -9,7 +9,9 @@
                     <h3 class='card-heading'>
                         <%= contact.name %>
                     </h3>
-                    <form action=<%="/delete-contact/"+contact.name%> method="post">
+                    <% const contactNamePath = contact.name.split(" ").join("%20") %>
+                    <form action=<%="/delete-contact/"+contact.name.includes(" ")?contactNamePath:contact.name%> method="get">
+
                         <button type="submit" class="delete-button"><i class="fa-solid fa-trash-can card-icon"></i></button>
                     </form>
                 </div>
