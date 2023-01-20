@@ -4,17 +4,28 @@
             <%= heading %>
         </h1>
         <% book.forEach(contact=>{%>
+            <%if(contact.name){%>
             <span>
                 <div class="contact-box">
                     <h3 class='card-heading'>
                         <%= contact.name %>
                     </h3>
+                    
                     <% const contactNamePath = contact.name.split(" ").join("%20") %>
-                    <form action=<%="/delete-contact/"+contact.name.includes(" ")?contactNamePath:contact.name%> method="get">
+                    <%let contactName = ""%>
+                    <% if(contact.name.includes(" ")){%>
+                        <% contactName = contactNamePath %> 
+                    <%}else {%>
+                        <% contactName = contact.name %> 
+                    <% } %> 
+                    
+                    <form action=<%="/delete-contact/"+contactName%> method="get">
 
                         <button type="submit" class="delete-button"><i class="fa-solid fa-trash-can card-icon"></i></button>
                     </form>
+                    
                 </div>
             </span>
+            <%}%>
             <%})%>
 <%- include("partials/footer") %>

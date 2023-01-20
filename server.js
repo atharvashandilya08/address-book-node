@@ -9,6 +9,8 @@ const session = require("express-session") // Importing the framework/module to 
 const passport = require("passport") // Importing the framework/module to authenticate
 const mongoose = require("mongoose") // Adding Databse 
 const passportLocalMongoose = require("passport-local-mongoose") // Importing the Framework to register user in database
+const GoogleStrategy = require('passport-google-oauth20').Strategy; // Importing the google oauth module
+const GitHubStrategy = require("passport-github2"); // Importing the github oauth module
 
 require("dotenv").config() // Configuring environment variables
 
@@ -54,7 +56,74 @@ const User = mongoose.model("User", userSchema); // Adding the Database Model
 passport.use(User.createStrategy()); // Initializing local strategy: a method to sign in through username and password
 
 passport.serializeUser(User.serializeUser()) // Initializing sign-in method
-passport.deserializeUser(User.deserializeUser()) 
+passport.deserializeUser(User.deserializeUser()) // Initializing sign-out method
+
+passport.use(new GoogleStrategy({ // Making the server use the google oauth
+    clientID: process.env.GOOGLE_CLIENT_ID, // Client ID
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Client Secret
+    callbackURL: "http://localhost:8080/auth/google/address-book", // Callback URL
+    userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo" // Solving the google+ deprecation error
+  },
+  function(accessToken, refreshToken, profile, done) { // A function to callback
+    User.findOne({
+        'google.id': profile.id 
+    }, function(err, user) {
+        if (err) {
+            return done(err);
+        }
+        if (!user) { // If there are no users
+            user = new User({ // Creating a new user
+                name: profile.displayName,
+                email: profile.emails[0].value,
+                username: profile.username,
+                addressBook: [],
+                provider: 'google',
+                google: profile._json
+            });
+            user.save(function(err) {
+                if (err) console.log(err);
+                return done(err, user);
+            });
+        } else {
+            //found user. Return
+            return done(err, user);
+        }
+    });
+  }
+));
+
+passport.use(new GitHubStrategy({ // Making the server use the github oauth
+    clientID: process.env.GITHUB_CLIENT_ID, // Client ID
+    clientSecret: process.env.GITHUB_CLIENT_SECRET, // Client Secret
+    callbackURL: "http://localhost:8080/auth/github/address-book", // Callback URL
+  },
+  function(accessToken, refreshToken, profile, done) { // A function to callback
+    User.findOne({
+        'github.id': profile.id 
+    }, function(err, user) {
+        if (err) {
+            return done(err);
+        }
+        if (!user) { // If there are no users
+            user = new User({ // Creating a new user
+                name: profile.displayName,
+                email: profile.emails[0].value,
+                username: profile.username,
+                addressBook: [],
+                provider: 'github',
+                github: profile._json
+            });
+            user.save(function(err) {
+                if (err) console.log(err);
+                return done(err, user);
+            });
+        } else {
+            //found user. Return
+            return done(err, user);
+        }
+    });
+  }
+));
 
 app.get("/", (req, res) => { // Rendering the frontend of the home route
     if(req.isAuthenticated()){ // Checking wether the user is logged in or not
@@ -266,6 +335,27 @@ app.get("/delete-contact/:contactName", async (req, res)=>{ // Deleting contacts
         res.redirect("/") // Redirects to the homepage for anonymous users
     }
 })
+
+app.get("/auth/google/", // Get request to get the google authentication route
+    passport.authenticate("google", { scope: ["profile"] }) // Authenticating the user
+);
+
+app.get("/auth/google/address-book",  // Get request to get the second step of google authentication
+    passport.authenticate("google", {failureRedirect: "/"}), // Authenticating the user
+    (req, res)=>{ // If authentication is successfull.
+        res.redirect("/home") // Success Redirect
+    }
+);
+
+app.get("/auth/github", // Getting the github authentication page
+    passport.authenticate('github', { scope: [ 'user:[email,username]' ] })
+    );
+app.get('/auth/github/address-book', 
+    passport.authenticate('github', { failureRedirect: '/' }),
+    function(req, res) {
+      // Successful authentication, redirect home.
+      res.redirect('/home');
+    });
 
 app.listen(8080, () => { // Starts the server on port 8080 (http://localhost:8080)
     console.log("Server has started on port 8080!") // Prints out if it's successfull

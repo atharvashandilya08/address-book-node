@@ -1,0 +1,8 @@
+<%="/delete-contact/"+contactName%>
+                    <% const contactNamePath = contact.name.split(" ").join("%20") %>
+                    <%let contactName = ""%>
+                    <% if(contact.name.includes(" ")){%>
+                        <% contactName = contactNamePath %> 
+                    <%}else {%>
+                        <% contactName = contact.name %> 
+                    <% } %> 
