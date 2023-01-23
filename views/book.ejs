@@ -5,7 +5,7 @@
         </h1>
         <% book.forEach(contact=>{%>
             <%if(contact.name){%>
-                <% const contactNamePath=contact.name.split(" ").join(" %20") %>
+                <% const contactNamePath=contact.name.split(" ").join("%20") %>
                 <%let contactName="" %>
                 <% if(contact.name.includes(" ")){%>
                     <% contactName = contactNamePath %> 
@@ -16,7 +16,7 @@
                 <div class=" contact-box">
                             <h3 class='card-heading'>
                                 <a href= <%="/profile/" +contactName %> >
-                                    <%= contactName %>
+                                    <%= contact.name %>
                                 </a>
                             </h3>
                             <form action=<%="/delete-contact/" +contactName%> method="get">
