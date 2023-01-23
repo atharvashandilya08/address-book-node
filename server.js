@@ -61,7 +61,7 @@ passport.deserializeUser(User.deserializeUser()) // Initializing sign-out method
 passport.use(new GoogleStrategy({ // Making the server use the google oauth
     clientID: process.env.GOOGLE_CLIENT_ID, // Client ID
     clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Client Secret
-    callbackURL: "http://localhost:8080/auth/google/address-book", // Callback URL
+    callbackURL: "https://address-book-full.onrender.com/auth/google/address-book", // Callback URL
     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo" // Solving the google+ deprecation error
   },
   function(accessToken, refreshToken, profile, done) { // A function to callback
@@ -95,7 +95,7 @@ passport.use(new GoogleStrategy({ // Making the server use the google oauth
 passport.use(new GitHubStrategy({ // Making the server use the github oauth
     clientID: process.env.GITHUB_CLIENT_ID, // Client ID
     clientSecret: process.env.GITHUB_CLIENT_SECRET, // Client Secret
-    callbackURL: "http://localhost:8080/auth/github/address-book", // Callback URL
+    callbackURL: "https://address-book-full.onrender.com/auth/github/address-book", // Callback URL
   },
   function(accessToken, refreshToken, profile, done) { // A function to callback
     User.findOne({
