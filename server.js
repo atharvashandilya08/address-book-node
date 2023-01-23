@@ -355,6 +355,17 @@ app.get('/auth/github/address-book',
       res.redirect('/home');
     });
 
+app.get("/profile/:nameOfUser", async (req, res)=>{
+    if(req.isAuthenticated){
+        const [fullDetails] = await User.find({username: req.user.username});
+        const fullAddressBook = fullDetails.addressBook;
+        const [filteredAddressBook] = fullAddressBook.filter(contact => contact.name === req.params.nameOfUser);
+        res.render("contactDetails", {contact: filteredAddressBook});
+    } else {
+        res.redirect("/")
+    }
+});
+
 app.listen(process.env.PORT||8080, () => { // Starts the server on port 8080 (http://localhost:8080)
     console.log("Server has started!") // Prints out if it's successfull
 })

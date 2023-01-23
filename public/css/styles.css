@@ -7,6 +7,11 @@
     color: black;
 }
 
+.big-header{
+    font-size: 4rem;
+    color:#8c52ff;
+}
+
 .home-anonymous{
     background-color: #f2f2f2;
     width: 100%;
