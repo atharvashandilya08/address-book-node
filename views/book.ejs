@@ -8,7 +8,7 @@
             <span>
                 <div class="contact-box">
                     <h3 class='card-heading'>
-                        <span onclick="copy">
+                        <span onclick="()=>{navigator.clipboard.writeText(contact)}">
                             <%= contact.name %>
                         </span>
                     </h3>
