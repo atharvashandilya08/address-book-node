@@ -326,9 +326,7 @@ app.get("/delete-contact/:contactName", async (req, res)=>{ // Deleting contacts
     if(req.isAuthenticated){ // If the user is logged in
         const [userDatabase] = await User.find({username: req.user.username}); // Finds the user in the database
         const fullAddressBook = userDatabase.addressBook; // The full address book of the user
-        console.log(req.params.contactName);
         const filteredAddressBook = fullAddressBook.filter(contact=>contact.name !== req.params.contactName.split("%20").join(" ")); // Takes out all the contacts which matches the name of the contact which should be deleted 
-        console.log(filteredAddressBook);
         await User.updateOne({username: req.user.username}, {addressBook: filteredAddressBook}); // Updates the address book
         res.redirect("/book") // Redirects user to the address book page
     }else{ // If the user is anonymous
@@ -357,6 +355,6 @@ app.get('/auth/github/address-book',
       res.redirect('/home');
     });
 
-app.listen(8080, () => { // Starts the server on port 8080 (http://localhost:8080)
-    console.log("Server has started on port 8080!") // Prints out if it's successfull
+app.listen(process.env.PORT||8080, () => { // Starts the server on port 8080 (http://localhost:8080)
+    console.log("Server has started!") // Prints out if it's successfull
 })
