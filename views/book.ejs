@@ -8,7 +8,9 @@
             <span>
                 <div class="contact-box">
                     <h3 class='card-heading'>
-                        <%= contact.name %>
+                        <span onclick="copy">
+                            <%= contact.name %>
+                        </span>
                     </h3>
                     
                     <% const contactNamePath = contact.name.split(" ").join("%20") %>
@@ -26,6 +28,12 @@
                     
                 </div>
             </span>
+            <script>
+                const copy = () => {
+                    navigator.clipboard.writeText(contact)
+                    alert("Copied details successfully!")
+                }
+            </script>
             <%}%>
             <%})%>
 <%- include("partials/footer") %>
